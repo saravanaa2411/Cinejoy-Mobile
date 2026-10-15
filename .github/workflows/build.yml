@@ -73,8 +73,8 @@ jobs:
                   applicationId 'com.cinejoy.mobile'
                   minSdk 23
                   targetSdk 28
-                  versionCode 1
-                  versionName '1.0'
+                  versionCode 2
+                  versionName '1.1'
               }
 
               compileOptions {
@@ -90,6 +90,8 @@ jobs:
 
               <application
                   android:label="Cinejoy"
+                  android:icon="@mipmap/ic_launcher"
+                  android:roundIcon="@mipmap/ic_launcher"
                   android:theme="@android:style/Theme.Material.Light.NoActionBar"
                   android:usesCleartextTraffic="false"
                   android:allowBackup="false">
@@ -142,8 +144,7 @@ jobs:
                       @Override
                       public boolean shouldOverrideUrlLoading(
                               WebView view, WebResourceRequest request) {
-                          String scheme = request.getUrl()
-                              .getScheme();
+                          String scheme = request.getUrl().getScheme();
 
                           if (scheme != null &&
                               scheme.equalsIgnoreCase("https")) {
@@ -183,7 +184,30 @@ jobs:
           }
           EOF
 
-      - name: Build debug APK
+      - name: Generate launcher icon
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y imagemagick
+
+          test -f cinejoy-icon.png || {
+            echo "ERROR: cinejoy-icon.png is missing from the repository root."
+            exit 1
+          }
+
+          mkdir -p app/src/main/res/mipmap-mdpi
+          mkdir -p app/src/main/res/mipmap-hdpi
+          mkdir -p app/src/main/res/mipmap-xhdpi
+          mkdir -p app/src/main/res/mipmap-xxhdpi
+          mkdir -p app/src/main/res/mipmap-xxxhdpi
+
+          magick cinejoy-icon.png -resize 48x48 app/src/main/res/mipmap-mdpi/ic_launcher.png
+          magick cinejoy-icon.png -resize 72x72 app/src/main/res/mipmap-hdpi/ic_launcher.png
+          magick cinejoy-icon.png -resize 96x96 app/src/main/res/mipmap-xhdpi/ic_launcher.png
+          magick cinejoy-icon.png -resize 144x144 app/src/main/res/mipmap-xxhdpi/ic_launcher.png
+          magick cinejoy-icon.png -resize 192x192 app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+
+      - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
